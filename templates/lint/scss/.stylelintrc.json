@@ -1,0 +1,3 @@
+{
+  "extends": ["@geekhive/stylelint-config-standard"]
+}
