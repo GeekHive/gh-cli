@@ -25,10 +25,12 @@
   "dependencies": {
     "@types/fs-extra": "^5.0.4",
     "@types/node": "^10.12.11",
+    "@types/ramda": "^0.25.43",
     "commander": "^2.19.0",
     "fs-extra": "^7.0.1",
     "install-packages": "^0.2.5",
     "npm-install-package": "^2.1.0",
+    "ramda": "^0.26.1",
     "typescript": "^3.2.1"
   }
 }
