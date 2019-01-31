@@ -9,4 +9,5 @@ program
     `add linter support for a file type ('js', 'ts', 'scss')`
   )
   .command('format', 'add formatting support')
+  .command('standards', 'add formatting support')
   .parse(process.argv);
