@@ -105,15 +105,24 @@ async function writeScripts(standards: Standard[]) {
   const scripts = {
     ...mergePackageDictionary(standards, 'scripts'),
     lint: createConcurrentScript(getMainScripts('lint', standards)),
-    format: createConcurrentScript(getMainScripts('format', standards)),
-    precommit: `yarn run format && yarn run lint`
+    format: createConcurrentScript(getMainScripts('format', standards))
   };
 
-  if (scripts) {
-    console.log('> Writing scripts to package.json:', Object.keys(scripts).join(', '));
+  const precommitScripts = {
+    hooks: {
+      'pre-commit': 'yarn run format && yarn run lint'
+    }
+  };
+
+  if (scripts && precommitScripts) {
+    console.log(
+      '> Writing scripts to package.json:',
+      Object.keys(scripts).join(', ')
+    );
     const pkgJsonPath = path.join(process.cwd(), 'package.json');
     const pkg = JSON.parse(fs.readFileSync(pkgJsonPath).toString());
     pkg.scripts = { ...(pkg.scripts || {}), ...scripts };
+    pkg.husky = { ...(pkg.husky || {}), ...precommitScripts };
     await fs.writeFile(pkgJsonPath, JSON.stringify(pkg, undefined, 2));
   } else {
     console.warn('No scripts provided.');
