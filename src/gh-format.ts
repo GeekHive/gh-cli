@@ -16,7 +16,7 @@ async function processFormat() {
     saveDev: true
   });
   fs.copy(
-    path.join(path.dirname(require.resolve('./gh')), '../templates/format'), 
+    path.join(path.dirname(require.resolve('./gh')), '../templates/format'),
     process.cwd()
   );
 }

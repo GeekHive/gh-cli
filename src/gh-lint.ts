@@ -28,7 +28,10 @@ async function processType(type: string) {
         saveDev: true
       });
       fs.copy(
-        path.join(path.dirname(require.resolve('./gh')), '../templates/lint/js'), 
+        path.join(
+          path.dirname(require.resolve('./gh')),
+          '../templates/lint/js'
+        ),
         process.cwd()
       );
       break;
@@ -38,7 +41,10 @@ async function processType(type: string) {
         saveDev: true
       });
       fs.copy(
-        path.join(path.dirname(require.resolve('./gh')), '../templates/lint/ts'), 
+        path.join(
+          path.dirname(require.resolve('./gh')),
+          '../templates/lint/ts'
+        ),
         process.cwd()
       );
       break;
@@ -48,7 +54,10 @@ async function processType(type: string) {
         saveDev: true
       });
       fs.copy(
-        path.join(path.dirname(require.resolve('./gh')), '../templates/lint/scss'), 
+        path.join(
+          path.dirname(require.resolve('./gh')),
+          '../templates/lint/scss'
+        ),
         process.cwd()
       );
       break;

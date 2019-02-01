@@ -16,7 +16,7 @@ function start() {
     console.error(ERROR_NO_TYPES);
     process.exit(1);
   }
-	processTypes(program.args);
+  processTypes(program.args);
 }
 
 async function processTypes(types: string[]) {
@@ -24,13 +24,13 @@ async function processTypes(types: string[]) {
 }
 
 function getSelectedStandards(types: string[]) {
-  return standards.filter(standard => 
-		types
-			// string[] -> boolean[] - whether any keyword of this standard matched the current type
-			.map(type => standard.keywords.reduce((p, c) => p || c === type, false))
-			// boolean[] -> boolean - whether this standard matched any type
-			.reduce((p, c) => p || c, false)
-	);
+  return standards.filter(standard =>
+    types
+      // string[] -> boolean[] - whether any keyword of this standard matched the current type
+      .map(type => standard.keywords.reduce((p, c) => p || c === type, false))
+      // boolean[] -> boolean - whether this standard matched any type
+      .reduce((p, c) => p || c, false)
+  );
 }
 
 async function processStandards(standards: Standard[]) {
@@ -46,7 +46,7 @@ async function installDependencies(standards: Standard[]) {
     console.log('> Installing dependencies:', dependencies.join(', '));
     try {
       await install({ packages: dependencies });
-    } catch(e) {
+    } catch (e) {
       console.error(e);
     }
   } else {
@@ -63,7 +63,7 @@ async function installDevDependencies(standards: Standard[]) {
     console.log('> Installing devDependencies:', devDependencies.join(', '));
     try {
       await install({ packages: devDependencies, saveDev: true });
-    } catch(e) {
+    } catch (e) {
       console.error(e);
     }
   } else {
@@ -75,20 +75,29 @@ async function copyTemplates(standards: Standard[]) {
   const templates = mergeTemplates(standards);
   if (templates.length) {
     console.log('> Installing templates: ', templates.join(', '));
-    templates.forEach(async template => 
-      await fs.copy(
-        path.join(path.dirname(require.resolve('./gh')), template),  
-        process.cwd(),
-        { overwrite: true }
-      )
+    templates.forEach(
+      async template =>
+        await fs.copy(
+          path.join(path.dirname(require.resolve('./gh')), template),
+          process.cwd(),
+          { overwrite: true }
+        )
     );
   } else {
-    console.warn('> No templates provided'); 
+    console.warn('> No templates provided');
   }
 }
 
 function getMainScripts(type: RuleType, standards: Standard[]) {
-  return R.uniq(R.flatten(standards.map(s => R.flatten(s.rules.map(r => r.type === type && r.mainScript ? r.mainScript : '').filter(Boolean)))) as any as string[]);
+  return R.uniq((R.flatten(
+    standards.map(s =>
+      R.flatten(
+        s.rules
+          .map(r => (r.type === type && r.mainScript ? r.mainScript : ''))
+          .filter(Boolean)
+      )
+    )
+  ) as any) as string[]);
 }
 
 const colors = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan'];
@@ -129,23 +138,42 @@ async function writeScripts(standards: Standard[]) {
   }
 }
 
-function mergePackageDictionary<K extends keyof Pick<PackageChanges, 'scripts'>>(standards: Standard[], field: K) {
+function mergePackageDictionary<
+  K extends keyof Pick<PackageChanges, 'scripts'>
+>(standards: Standard[], field: K) {
   return standards
-    .map(s => s.rules.map(r => r.packageChanges ? r.packageChanges[field] : []).reduce((p, c) => R.merge(p, c)))
+    .map(s =>
+      s.rules
+        .map(r => (r.packageChanges ? r.packageChanges[field] : []))
+        .reduce((p, c) => R.merge(p, c))
+    )
     .reduce((p, c) => R.merge(p, c)) as { [name: string]: string };
 }
 
-function mergePackageList<K extends keyof Pick<PackageChanges, 'dependencies' | 'devDependencies'>>(standards: Standard[], field: K) {
-  return R.uniq(standards.map(s => 
-      s.rules
-        .map(r => r.packageChanges && r.packageChanges[field] ? r.packageChanges[field] as string[] : [])
-        .reduce((p = [], c = []) => [...p, ...c])
-    ).reduce((p = [], c = []) => [...p, ...c]) || []
+function mergePackageList<
+  K extends keyof Pick<PackageChanges, 'dependencies' | 'devDependencies'>
+>(standards: Standard[], field: K) {
+  return R.uniq(
+    standards
+      .map(s =>
+        s.rules
+          .map(r =>
+            r.packageChanges && r.packageChanges[field]
+              ? (r.packageChanges[field] as string[])
+              : []
+          )
+          .reduce((p = [], c = []) => [...p, ...c])
+      )
+      .reduce((p = [], c = []) => [...p, ...c]) || []
   );
 }
 
 function mergeTemplates(standards: Standard[]): string[] {
-  return R.uniq(R.flatten(standards.map(s => R.flatten(s.rules.map(r => r.templates || []))))) as any as string[];
+  return (R.uniq(
+    R.flatten(
+      standards.map(s => R.flatten(s.rules.map(r => r.templates || [])))
+    )
+  ) as any) as string[];
 }
 
 start();
