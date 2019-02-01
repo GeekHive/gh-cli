@@ -1,6 +1,8 @@
 export type RuleType = 'lint' | 'format';
 
-export interface Scripts { [name: string]: string; }
+export interface Scripts {
+  [name: string]: string;
+}
 
 export interface PackageChanges {
   dependencies?: string[];
@@ -24,7 +26,10 @@ export interface Standard {
   rules: Rule[];
 }
 
-export type LintRuleOptions = Pick<Rule, 'name' | 'description' | 'packageChanges' | 'mainScript' | 'templates'>;
+export type LintRuleOptions = Pick<
+  Rule,
+  'name' | 'description' | 'packageChanges' | 'mainScript' | 'templates'
+>;
 
 export function createLintRule(options: LintRuleOptions): Rule {
   return {
@@ -34,10 +39,13 @@ export function createLintRule(options: LintRuleOptions): Rule {
     packageChanges: options.packageChanges,
     mainScript: options.mainScript,
     templates: options.templates
-  }
+  };
 }
 
-export type PrettierRuleOptions = Pick<Rule, 'name' | 'packageChanges' | 'mainScript'>;
+export type PrettierRuleOptions = Pick<
+  Rule,
+  'name' | 'packageChanges' | 'mainScript'
+>;
 
 export function createPrettierRule(options: PrettierRuleOptions): Rule {
   return {
@@ -47,7 +55,7 @@ export function createPrettierRule(options: PrettierRuleOptions): Rule {
     packageChanges: options.packageChanges,
     mainScript: options.mainScript,
     templates: ['../templates/format/']
-  }
+  };
 }
 
 export const javaScript: Standard = {
@@ -76,7 +84,7 @@ export const javaScript: Standard = {
       },
       mainScript: 'js:lint',
       templates: ['../templates/lint/js']
-    }),
+    })
   ]
 };
 
@@ -106,7 +114,7 @@ export const typeScript: Standard = {
       },
       mainScript: 'ts:lint',
       templates: ['../templates/lint/ts']
-    }),
+    })
   ]
 };
 
@@ -136,14 +144,14 @@ export const scss: Standard = {
       },
       mainScript: 'scss:lint',
       templates: ['../templates/lint/scss']
-    }),
+    })
   ]
 };
 
 export const standards: Standard[] = [javaScript, typeScript, scss];
 
 // export interface Scripts<
-//   LintScripts extends string, 
+//   LintScripts extends string,
 //   FormatScripts extends string
 // > {
 //   lint: { [key in LintScripts]: string; }

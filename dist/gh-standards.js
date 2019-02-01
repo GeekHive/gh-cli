@@ -212,16 +212,22 @@ function createConcurrentScript(scripts, killOthersOnFail) {
 }
 function writeScripts(standards) {
     return __awaiter(this, void 0, void 0, function () {
-        var scripts, pkgJsonPath, pkg;
+        var scripts, precommitScripts, pkgJsonPath, pkg;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    scripts = __assign({}, mergePackageDictionary(standards, 'scripts'), { lint: createConcurrentScript(getMainScripts('lint', standards)), format: createConcurrentScript(getMainScripts('format', standards)), precommit: "yarn run format && yarn run lint" });
-                    if (!scripts) return [3 /*break*/, 2];
+                    scripts = __assign({}, mergePackageDictionary(standards, 'scripts'), { lint: createConcurrentScript(getMainScripts('lint', standards)), format: createConcurrentScript(getMainScripts('format', standards)) });
+                    precommitScripts = {
+                        hooks: {
+                            'pre-commit': 'yarn run format && yarn run lint'
+                        }
+                    };
+                    if (!(scripts && precommitScripts)) return [3 /*break*/, 2];
                     console.log('> Writing scripts to package.json:', Object.keys(scripts).join(', '));
                     pkgJsonPath = path_1.default.join(process.cwd(), 'package.json');
                     pkg = JSON.parse(fs_extra_1.default.readFileSync(pkgJsonPath).toString());
                     pkg.scripts = __assign({}, (pkg.scripts || {}), scripts);
+                    pkg.husky = __assign({}, (pkg.husky || {}), precommitScripts);
                     return [4 /*yield*/, fs_extra_1.default.writeFile(pkgJsonPath, JSON.stringify(pkg, undefined, 2))];
                 case 1:
                     _a.sent();
