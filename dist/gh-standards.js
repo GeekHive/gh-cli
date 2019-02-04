@@ -65,6 +65,7 @@ var R = __importStar(require("ramda"));
 var standards_1 = require("./standards");
 var ERROR_NO_TYPES = 'At least one valid type is required.';
 // const ERROR_INVALID_TYPE = (type: string) => `Type ${type} is not supported.`;
+var packageManager = process.env.PATH ? process.env.PATH.toLowerCase().includes('yarn') ? 'yarn' : 'npm' : 'npm';
 function start() {
     commander_1.default.parse(process.argv);
     if (!commander_1.default.args.length) {
@@ -244,7 +245,7 @@ function createConcurrentScript(scripts, killOthersOnFail) {
     var k = killOthersOnFail ? ' --kill-others-on-fail' : '';
     var n = scripts.join(',');
     var c = colors.slice(0, scripts.length).join(',');
-    var s = scripts.map(function (s) { return "\"yarn run " + s + "\""; }).join(' ');
+    var s = scripts.map(function (s) { return "\"" + packageManager + " run " + s + "\""; }).join(' ');
     return "concurrently" + k + " -n \"" + n + "\" -c \"" + c + "\" " + s;
 }
 function writeScripts(standards) {
@@ -256,7 +257,7 @@ function writeScripts(standards) {
                     scripts = __assign({}, mergePackageDictionary(standards, 'scripts'), { lint: createConcurrentScript(getMainScripts('lint', standards)), format: createConcurrentScript(getMainScripts('format', standards)) });
                     precommitScripts = {
                         hooks: {
-                            'pre-commit': 'yarn run format && yarn run lint'
+                            'pre-commit': packageManager + " run format && " + packageManager + " run lint"
                         }
                     };
                     if (!(scripts && precommitScripts)) return [3 /*break*/, 2];

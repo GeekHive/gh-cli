@@ -23,8 +23,8 @@
     "build": "tsc -p ./",
     "ts:format": "prettier --write src/**/*.ts src/**/*.tsx",
     "ts:lint": "tslint --project ./",
-    "lint": "concurrently -n \"ts:lint\" -c \"red\" \"yarn run ts:lint\"",
-    "format": "concurrently -n \"ts:format\" -c \"red\" \"yarn run ts:format\""
+    "lint": "concurrently -n \"ts:lint\" -c \"red\" \"npm run ts:lint\"",
+    "format": "concurrently -n \"ts:format\" -c \"red\" \"npm run ts:format\""
   },
   "dependencies": {
     "@types/fs-extra": "^5.0.4",
@@ -46,7 +46,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "yarn run format && yarn run lint"
+      "pre-commit": "npm run format && npm run lint"
     }
   }
 }
