@@ -9,7 +9,11 @@ import { standards, Standard, PackageChanges, RuleType } from './standards';
 
 const ERROR_NO_TYPES = 'At least one valid type is required.';
 // const ERROR_INVALID_TYPE = (type: string) => `Type ${type} is not supported.`;
-const packageManager = process.env.PATH ? process.env.PATH.toLowerCase().includes('yarn') ? 'yarn' : 'npm' : 'npm';
+const packageManager = process.env.PATH
+  ? process.env.PATH.toLowerCase().includes('yarn')
+    ? 'yarn'
+    : 'npm'
+  : 'npm';
 
 function start() {
   program.parse(process.argv);
