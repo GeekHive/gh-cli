@@ -9,6 +9,11 @@ import { standards, Standard, PackageChanges, RuleType } from './standards';
 
 const ERROR_NO_TYPES = 'At least one valid type is required.';
 // const ERROR_INVALID_TYPE = (type: string) => `Type ${type} is not supported.`;
+const packageManager = process.env.PATH
+  ? process.env.PATH.toLowerCase().includes('yarn')
+    ? 'yarn'
+    : 'npm'
+  : 'npm';
 
 function start() {
   program.parse(process.argv);
@@ -38,6 +43,23 @@ async function processStandards(standards: Standard[]) {
   await installDevDependencies(standards);
   await copyTemplates(standards);
   await writeScripts(standards);
+  await configureSettings();
+}
+
+async function configureSettings() {
+  const vsCodeSettingsPath = path.join(process.cwd(), '.vscode/settings.json');
+  let settings: { [key: string]: string | boolean | number | null } = {};
+  console.log('> Configuring workspace settings');
+
+  if (!fs.existsSync('.vscode')) {
+    await fs.mkdir('.vscode');
+  } else if (fs.existsSync(vsCodeSettingsPath)) {
+    settings = JSON.parse(fs.readFileSync(vsCodeSettingsPath).toString());
+  }
+
+  settings['editor.formatOnPaste'] = true;
+  settings['editor.formatOnSave'] = true;
+  await fs.writeFile(vsCodeSettingsPath, JSON.stringify(settings));
 }
 
 async function installDependencies(standards: Standard[]) {
@@ -106,7 +128,7 @@ function createConcurrentScript(scripts: string[], killOthersOnFail?: boolean) {
   const k = killOthersOnFail ? ' --kill-others-on-fail' : '';
   const n = scripts.join(',');
   const c = colors.slice(0, scripts.length).join(',');
-  const s = scripts.map(s => `\"yarn run ${s}\"`).join(' ');
+  const s = scripts.map(s => `\"${packageManager} run ${s}\"`).join(' ');
   return `concurrently${k} -n \"${n}\" -c \"${c}\" ${s}`;
 }
 
@@ -119,7 +141,7 @@ async function writeScripts(standards: Standard[]) {
 
   const precommitScripts = {
     hooks: {
-      'pre-commit': 'yarn run format && yarn run lint'
+      'pre-commit': `${packageManager} run format && ${packageManager} run lint`
     }
   };
 
