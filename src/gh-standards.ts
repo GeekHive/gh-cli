@@ -38,6 +38,23 @@ async function processStandards(standards: Standard[]) {
   await installDevDependencies(standards);
   await copyTemplates(standards);
   await writeScripts(standards);
+  await configureSettings();
+}
+
+async function configureSettings() {
+  const vsCodeSettingsPath = path.join(process.cwd(), '.vscode/settings.json');
+  let settings: { [key: string]: string | boolean | number | null } = {};
+  console.log('> Configuring workspace settings');
+
+  if (!fs.existsSync('.vscode')) {
+    await fs.mkdir('.vscode');
+  } else if (fs.existsSync(vsCodeSettingsPath)) {
+    settings = JSON.parse(fs.readFileSync(vsCodeSettingsPath).toString());
+  }
+
+  settings['editor.formatOnPaste'] = true;
+  settings['editor.formatOnSave'] = true;
+  await fs.writeFile(vsCodeSettingsPath, JSON.stringify(settings));
 }
 
 async function installDependencies(standards: Standard[]) {

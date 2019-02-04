@@ -48,7 +48,7 @@ exports.javaScript = {
             },
             mainScript: 'js:lint',
             templates: ['../templates/lint/js']
-        }),
+        })
     ]
 };
 exports.typeScript = {
@@ -77,7 +77,7 @@ exports.typeScript = {
             },
             mainScript: 'ts:lint',
             templates: ['../templates/lint/ts']
-        }),
+        })
     ]
 };
 exports.scss = {
@@ -106,12 +106,12 @@ exports.scss = {
             },
             mainScript: 'scss:lint',
             templates: ['../templates/lint/scss']
-        }),
+        })
     ]
 };
 exports.standards = [exports.javaScript, exports.typeScript, exports.scss];
 // export interface Scripts<
-//   LintScripts extends string, 
+//   LintScripts extends string,
 //   FormatScripts extends string
 // > {
 //   lint: { [key in LintScripts]: string; }

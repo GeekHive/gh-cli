@@ -110,6 +110,39 @@ function processStandards(standards) {
                     return [4 /*yield*/, writeScripts(standards)];
                 case 4:
                     _a.sent();
+                    return [4 /*yield*/, configureSettings()];
+                case 5:
+                    _a.sent();
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+function configureSettings() {
+    return __awaiter(this, void 0, void 0, function () {
+        var vsCodeSettingsPath, settings;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    vsCodeSettingsPath = path_1.default.join(process.cwd(), '.vscode/settings.json');
+                    settings = {};
+                    console.log('> Configuring workspace settings');
+                    if (!!fs_extra_1.default.existsSync('.vscode')) return [3 /*break*/, 2];
+                    return [4 /*yield*/, fs_extra_1.default.mkdir('.vscode')];
+                case 1:
+                    _a.sent();
+                    return [3 /*break*/, 3];
+                case 2:
+                    if (fs_extra_1.default.existsSync(vsCodeSettingsPath)) {
+                        settings = JSON.parse(fs_extra_1.default.readFileSync(vsCodeSettingsPath).toString());
+                    }
+                    _a.label = 3;
+                case 3:
+                    settings['editor.formatOnPaste'] = true;
+                    settings['editor.formatOnSave'] = true;
+                    return [4 /*yield*/, fs_extra_1.default.writeFile(vsCodeSettingsPath, JSON.stringify(settings))];
+                case 4:
+                    _a.sent();
                     return [2 /*return*/];
             }
         });
@@ -200,7 +233,11 @@ function copyTemplates(standards) {
     });
 }
 function getMainScripts(type, standards) {
-    return R.uniq(R.flatten(standards.map(function (s) { return R.flatten(s.rules.map(function (r) { return r.type === type && r.mainScript ? r.mainScript : ''; }).filter(Boolean)); })));
+    return R.uniq(R.flatten(standards.map(function (s) {
+        return R.flatten(s.rules
+            .map(function (r) { return (r.type === type && r.mainScript ? r.mainScript : ''); })
+            .filter(Boolean));
+    })));
 }
 var colors = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan'];
 function createConcurrentScript(scripts, killOthersOnFail) {
@@ -242,19 +279,29 @@ function writeScripts(standards) {
 }
 function mergePackageDictionary(standards, field) {
     return standards
-        .map(function (s) { return s.rules.map(function (r) { return r.packageChanges ? r.packageChanges[field] : []; }).reduce(function (p, c) { return R.merge(p, c); }); })
+        .map(function (s) {
+        return s.rules
+            .map(function (r) { return (r.packageChanges ? r.packageChanges[field] : []); })
+            .reduce(function (p, c) { return R.merge(p, c); });
+    })
         .reduce(function (p, c) { return R.merge(p, c); });
 }
 function mergePackageList(standards, field) {
-    return R.uniq(standards.map(function (s) {
+    return R.uniq(standards
+        .map(function (s) {
         return s.rules
-            .map(function (r) { return r.packageChanges && r.packageChanges[field] ? r.packageChanges[field] : []; })
+            .map(function (r) {
+            return r.packageChanges && r.packageChanges[field]
+                ? r.packageChanges[field]
+                : [];
+        })
             .reduce(function (p, c) {
             if (p === void 0) { p = []; }
             if (c === void 0) { c = []; }
             return p.concat(c);
         });
-    }).reduce(function (p, c) {
+    })
+        .reduce(function (p, c) {
         if (p === void 0) { p = []; }
         if (c === void 0) { c = []; }
         return p.concat(c);
