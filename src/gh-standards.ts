@@ -9,6 +9,7 @@ import { standards, Standard, PackageChanges, RuleType } from './standards';
 
 const ERROR_NO_TYPES = 'At least one valid type is required.';
 // const ERROR_INVALID_TYPE = (type: string) => `Type ${type} is not supported.`;
+let command = 'npm';
 
 function start() {
   program.parse(process.argv);
@@ -20,6 +21,7 @@ function start() {
 }
 
 async function processTypes(types: string[]) {
+  command = await install.determinePackageManager(process.cwd());
   await processStandards(getSelectedStandards(types));
 }
 
@@ -105,7 +107,7 @@ function createConcurrentScript(scripts: string[], killOthersOnFail?: boolean) {
   const k = killOthersOnFail ? ' --kill-others-on-fail' : '';
   const n = scripts.join(',');
   const c = colors.slice(0, scripts.length).join(',');
-  const s = scripts.map(s => `\"yarn run ${s}\"`).join(' ');
+  const s = scripts.map(s => `\"${command} run ${s}\"`).join(' ');
   return `concurrently${k} -n \"${n}\" -c \"${c}\" ${s}`;
 }
 
@@ -118,7 +120,7 @@ async function writeScripts(standards: Standard[]) {
 
   const precommitScripts = {
     hooks: {
-      'pre-commit': 'yarn run format && yarn run lint'
+      'pre-commit': `${command} run format && ${command} run lint`
     }
   };
 

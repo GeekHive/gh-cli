@@ -23,5 +23,12 @@ declare module 'install-packages' {
     packageManager?: 'npm' | 'yarn';
   }
 
-  export default function install(options?: Options): Promise<void>;
+  interface Install {
+    (options?: Options): Promise<void>;
+    determinePackageManager(cwd: string): string;
+  }
+
+  const install: Install;
+
+  export default install;
 }
