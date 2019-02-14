@@ -4,11 +4,10 @@ import program from 'commander';
 import install from 'install-packages';
 import path from 'path';
 import fs from 'fs-extra';
-import R from 'ramda';
+import R, { Dictionary } from 'ramda';
 import { standards, Standard, PackageChanges, RuleType } from './standards';
 
 const ERROR_NO_TYPES = 'At least one valid type is required.';
-// const ERROR_INVALID_TYPE = (type: string) => `Type ${type} is not supported.`;
 let command = 'npm';
 
 function start() {
@@ -35,14 +34,14 @@ function getSelectedStandards(types: string[]) {
   );
 }
 
-async function processStandards(standards: Standard[]) {
+async function processStandards(standards: Standard[]): Promise<void> {
   await installDependencies(standards);
   await installDevDependencies(standards);
   await copyTemplates(standards);
   await writeScripts(standards);
 }
 
-async function installDependencies(standards: Standard[]) {
+async function installDependencies(standards: Standard[]): Promise<void> {
   const dependencies = mergePackageList(standards, 'dependencies');
   if (dependencies.length) {
     console.log('> Installing dependencies:', dependencies.join(', '));
@@ -56,7 +55,7 @@ async function installDependencies(standards: Standard[]) {
   }
 }
 
-async function installDevDependencies(standards: Standard[]) {
+async function installDevDependencies(standards: Standard[]): Promise<void> {
   const devDependencies = mergePackageList(standards, 'devDependencies');
   devDependencies.push('concurrently');
   devDependencies.push('husky');
@@ -72,7 +71,7 @@ async function installDevDependencies(standards: Standard[]) {
   }
 }
 
-async function copyTemplates(standards: Standard[]) {
+async function copyTemplates(standards: Standard[]): Promise<void> {
   const templates = mergeTemplates(standards);
   if (templates.length) {
     console.log('> Installing templates: ', templates.join(', '));
@@ -89,7 +88,7 @@ async function copyTemplates(standards: Standard[]) {
   }
 }
 
-function getMainScripts(type: RuleType, standards: Standard[]) {
+function getMainScripts(type: RuleType, standards: Standard[]): string[] {
   return R.uniq((R.flatten(
     standards.map(s =>
       R.flatten(
@@ -103,7 +102,10 @@ function getMainScripts(type: RuleType, standards: Standard[]) {
 
 const colors = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan'];
 
-function createConcurrentScript(scripts: string[], killOthersOnFail?: boolean) {
+function createConcurrentScript(
+  scripts: string[],
+  killOthersOnFail?: boolean
+): string {
   const k = killOthersOnFail ? ' --kill-others-on-fail' : '';
   const n = scripts.join(',');
   const c = colors.slice(0, scripts.length).join(',');
@@ -111,7 +113,7 @@ function createConcurrentScript(scripts: string[], killOthersOnFail?: boolean) {
   return `concurrently${k} -n \"${n}\" -c \"${c}\" ${s}`;
 }
 
-async function writeScripts(standards: Standard[]) {
+async function writeScripts(standards: Standard[]): Promise<void> {
   const scripts = {
     ...mergePackageDictionary(standards, 'scripts'),
     lint: createConcurrentScript(getMainScripts('lint', standards)),
@@ -125,15 +127,15 @@ async function writeScripts(standards: Standard[]) {
   };
 
   if (scripts && precommitScripts) {
-    console.log(
-      '> Writing scripts to package.json:',
-      Object.keys(scripts).join(', ')
-    );
-    const pkgJsonPath = path.join(process.cwd(), 'package.json');
-    const pkg = JSON.parse(fs.readFileSync(pkgJsonPath).toString());
-    pkg.scripts = { ...(pkg.scripts || {}), ...scripts };
-    pkg.husky = { ...(pkg.husky || {}), ...precommitScripts };
-    await fs.writeFile(pkgJsonPath, JSON.stringify(pkg, undefined, 2));
+  console.log(
+    '> Writing scripts to package.json:',
+    Object.keys(scripts).join(', ')
+  );
+  const pkgJsonPath = path.join(process.cwd(), 'package.json');
+  const pkg = JSON.parse(fs.readFileSync(pkgJsonPath).toString());
+  pkg.scripts = { ...(pkg.scripts || {}), ...scripts };
+  pkg.husky = { ...(pkg.husky || {}), ...precommitScripts };
+  await fs.writeFile(pkgJsonPath, JSON.stringify(pkg, undefined, 2));
   } else {
     console.warn('No scripts provided.');
   }
@@ -141,19 +143,19 @@ async function writeScripts(standards: Standard[]) {
 
 function mergePackageDictionary<
   K extends keyof Pick<PackageChanges, 'scripts'>
->(standards: Standard[], field: K) {
+>(standards: Standard[], field: K): Dictionary<string> {
   return standards
     .map(s =>
       s.rules
         .map(r => (r.packageChanges ? r.packageChanges[field] : []))
         .reduce((p, c) => R.merge(p, c))
     )
-    .reduce((p, c) => R.merge(p, c)) as { [name: string]: string };
+    .reduce((p, c) => R.merge(p, c)) as Dictionary<string>;
 }
 
 function mergePackageList<
   K extends keyof Pick<PackageChanges, 'dependencies' | 'devDependencies'>
->(standards: Standard[], field: K) {
+>(standards: Standard[], field: K): string[] {
   return R.uniq(
     standards
       .map(s =>
