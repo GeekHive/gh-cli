@@ -4,5 +4,5 @@ import program from 'commander';
 
 program
   .version('1.0.0')
-  .command('standards', 'add formatting support')
+  .command('standards [types]', "add standards for js, ts, and/or scss.")
   .parse(process.argv);
