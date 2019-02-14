@@ -126,7 +126,6 @@ async function writeScripts(standards: Standard[]): Promise<void> {
     }
   };
 
-  if (scripts && precommitScripts) {
   console.log(
     '> Writing scripts to package.json:',
     Object.keys(scripts).join(', ')
@@ -136,9 +135,6 @@ async function writeScripts(standards: Standard[]): Promise<void> {
   pkg.scripts = { ...(pkg.scripts || {}), ...scripts };
   pkg.husky = { ...(pkg.husky || {}), ...precommitScripts };
   await fs.writeFile(pkgJsonPath, JSON.stringify(pkg, undefined, 2));
-  } else {
-    console.warn('No scripts provided.');
-  }
 }
 
 function mergePackageDictionary<
