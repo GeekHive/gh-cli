@@ -4,7 +4,7 @@ import program from 'commander';
 import install from 'install-packages';
 import path from 'path';
 import fs from 'fs-extra';
-import * as R from 'ramda';
+import R from 'ramda';
 import { standards, Standard, PackageChanges, RuleType } from './standards';
 
 const ERROR_NO_TYPES = 'At least one valid type is required.';
@@ -58,7 +58,6 @@ async function installDevDependencies(standards: Standard[]) {
   const devDependencies = mergePackageList(standards, 'devDependencies');
   devDependencies.push('concurrently');
   devDependencies.push('husky');
-  // devDependencies.push('husky');
   if (devDependencies.length) {
     console.log('> Installing devDependencies:', devDependencies.join(', '));
     try {
