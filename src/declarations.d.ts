@@ -1,18 +1,3 @@
-declare module 'npm-install-package' {
-  export interface Options {
-    save?: boolean;
-    saveDev?: boolean;
-    cache?: boolean;
-    silent?: boolean;
-  }
-
-  export default function install(
-    dependencies: string[],
-    options?: Options,
-    cb?: (err?: Error) => any
-  ): void;
-}
-
 declare module 'install-packages' {
   export interface Options {
     packages?: string[];
