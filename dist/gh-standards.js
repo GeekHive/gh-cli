@@ -49,22 +49,15 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var commander_1 = __importDefault(require("commander"));
 var install_packages_1 = __importDefault(require("install-packages"));
 var path_1 = __importDefault(require("path"));
 var fs_extra_1 = __importDefault(require("fs-extra"));
-var R = __importStar(require("ramda"));
+var ramda_1 = __importDefault(require("ramda"));
 var standards_1 = require("./standards");
 var ERROR_NO_TYPES = 'At least one valid type is required.';
-// const ERROR_INVALID_TYPE = (type: string) => `Type ${type} is not supported.`;
+var command = 'npm';
 function start() {
     commander_1.default.parse(process.argv);
     if (!commander_1.default.args.length) {
@@ -77,8 +70,11 @@ function processTypes(types) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, processStandards(getSelectedStandards(types))];
+                case 0: return [4 /*yield*/, install_packages_1.default.determinePackageManager(process.cwd())];
                 case 1:
+                    command = _a.sent();
+                    return [4 /*yield*/, processStandards(getSelectedStandards(types))];
+                case 2:
                     _a.sent();
                     return [2 /*return*/];
             }
@@ -200,14 +196,18 @@ function copyTemplates(standards) {
     });
 }
 function getMainScripts(type, standards) {
-    return R.uniq(R.flatten(standards.map(function (s) { return R.flatten(s.rules.map(function (r) { return r.type === type && r.mainScript ? r.mainScript : ''; }).filter(Boolean)); })));
+    return ramda_1.default.uniq(ramda_1.default.flatten(standards.map(function (s) {
+        return ramda_1.default.flatten(s.rules
+            .map(function (r) { return (r.type === type && r.mainScript ? r.mainScript : ''); })
+            .filter(Boolean));
+    })));
 }
 var colors = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan'];
 function createConcurrentScript(scripts, killOthersOnFail) {
     var k = killOthersOnFail ? ' --kill-others-on-fail' : '';
     var n = scripts.join(',');
     var c = colors.slice(0, scripts.length).join(',');
-    var s = scripts.map(function (s) { return "\"yarn run " + s + "\""; }).join(' ');
+    var s = scripts.map(function (s) { return "\"" + command + " run " + s + "\""; }).join(' ');
     return "concurrently" + k + " -n \"" + n + "\" -c \"" + c + "\" " + s;
 }
 function writeScripts(standards) {
@@ -219,10 +219,9 @@ function writeScripts(standards) {
                     scripts = __assign({}, mergePackageDictionary(standards, 'scripts'), { lint: createConcurrentScript(getMainScripts('lint', standards)), format: createConcurrentScript(getMainScripts('format', standards)) });
                     precommitScripts = {
                         hooks: {
-                            'pre-commit': 'yarn run format && yarn run lint'
+                            'pre-commit': command + " run format && " + command + " run lint"
                         }
                     };
-                    if (!(scripts && precommitScripts)) return [3 /*break*/, 2];
                     console.log('> Writing scripts to package.json:', Object.keys(scripts).join(', '));
                     pkgJsonPath = path_1.default.join(process.cwd(), 'package.json');
                     pkg = JSON.parse(fs_extra_1.default.readFileSync(pkgJsonPath).toString());
@@ -231,36 +230,42 @@ function writeScripts(standards) {
                     return [4 /*yield*/, fs_extra_1.default.writeFile(pkgJsonPath, JSON.stringify(pkg, undefined, 2))];
                 case 1:
                     _a.sent();
-                    return [3 /*break*/, 3];
-                case 2:
-                    console.warn('No scripts provided.');
-                    _a.label = 3;
-                case 3: return [2 /*return*/];
+                    return [2 /*return*/];
             }
         });
     });
 }
 function mergePackageDictionary(standards, field) {
     return standards
-        .map(function (s) { return s.rules.map(function (r) { return r.packageChanges ? r.packageChanges[field] : []; }).reduce(function (p, c) { return R.merge(p, c); }); })
-        .reduce(function (p, c) { return R.merge(p, c); });
+        .map(function (s) {
+        return s.rules
+            .map(function (r) { return (r.packageChanges ? r.packageChanges[field] : []); })
+            .reduce(function (p, c) { return ramda_1.default.merge(p, c); });
+    })
+        .reduce(function (p, c) { return ramda_1.default.merge(p, c); });
 }
 function mergePackageList(standards, field) {
-    return R.uniq(standards.map(function (s) {
+    return ramda_1.default.uniq(standards
+        .map(function (s) {
         return s.rules
-            .map(function (r) { return r.packageChanges && r.packageChanges[field] ? r.packageChanges[field] : []; })
+            .map(function (r) {
+            return r.packageChanges && r.packageChanges[field]
+                ? r.packageChanges[field]
+                : [];
+        })
             .reduce(function (p, c) {
             if (p === void 0) { p = []; }
             if (c === void 0) { c = []; }
             return p.concat(c);
         });
-    }).reduce(function (p, c) {
+    })
+        .reduce(function (p, c) {
         if (p === void 0) { p = []; }
         if (c === void 0) { c = []; }
         return p.concat(c);
     }) || []);
 }
 function mergeTemplates(standards) {
-    return R.uniq(R.flatten(standards.map(function (s) { return R.flatten(s.rules.map(function (r) { return r.templates || []; })); })));
+    return ramda_1.default.uniq(ramda_1.default.flatten(standards.map(function (s) { return ramda_1.default.flatten(s.rules.map(function (r) { return r.templates || []; })); })));
 }
 start();
