@@ -51,9 +51,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var commander_1 = __importDefault(require("commander"));
+var fs_extra_1 = __importDefault(require("fs-extra"));
 var install_packages_1 = __importDefault(require("install-packages"));
 var path_1 = __importDefault(require("path"));
-var fs_extra_1 = __importDefault(require("fs-extra"));
 var ramda_1 = __importDefault(require("ramda"));
 var standards_1 = require("./standards");
 var ERROR_NO_TYPES = 'At least one valid type is required.';

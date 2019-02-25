@@ -1,7 +1,7 @@
 {
   "name": "@geekhive/gh-cli",
   "description": "CLI utility for front end GeekHive projects.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "license": "MIT",
   "author": {
     "name": "Justin Firth",

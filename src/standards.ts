@@ -1,24 +1,6 @@
-export type RuleType = 'lint' | 'format';
+import { createLintRule, createPrettierRule, Rule } from './rules';
 
-export interface Scripts {
-  [name: string]: string;
-}
-
-export interface PackageChanges {
-  dependencies?: string[];
-  devDependencies?: string[];
-  scripts?: Scripts;
-}
-
-export interface Rule {
-  type: RuleType;
-  name: string;
-  description: string;
-  packageChanges?: PackageChanges;
-  mainScript?: string;
-  templates?: string[];
-}
-
+/** A collection of rules for a language. */
 export interface Standard {
   name: string;
   keywords: string[];
@@ -26,42 +8,11 @@ export interface Standard {
   rules: Rule[];
 }
 
-export type LintRuleOptions = Pick<
-  Rule,
-  'name' | 'description' | 'packageChanges' | 'mainScript' | 'templates'
->;
-
-export function createLintRule(options: LintRuleOptions): Rule {
-  return {
-    type: 'lint',
-    name: options.name,
-    description: options.description,
-    packageChanges: options.packageChanges,
-    mainScript: options.mainScript,
-    templates: options.templates
-  };
-}
-
-export type PrettierRuleOptions = Pick<
-  Rule,
-  'name' | 'packageChanges' | 'mainScript'
->;
-
-export function createPrettierRule(options: PrettierRuleOptions): Rule {
-  return {
-    type: 'format',
-    name: `Prettier for ${options.name}`,
-    description: `Prettier formatting for ${options.name}.`,
-    packageChanges: options.packageChanges,
-    mainScript: options.mainScript,
-    templates: ['../templates/format/']
-  };
-}
-
+/** JavaScript standard. */
 export const javaScript: Standard = {
   name: 'JavaScript',
   keywords: ['js', 'javascript', '.js', 'jsx', '.jsx'],
-  description: '',
+  description: 'JavaScript standard',
   rules: [
     createPrettierRule({
       name: 'JavaScript',
@@ -88,10 +39,11 @@ export const javaScript: Standard = {
   ]
 };
 
+/** TypeScript standard */
 export const typeScript: Standard = {
   name: 'TypeScript',
   keywords: ['ts', 'typescript', '.ts', 'tsx', '.tsx'],
-  description: '',
+  description: 'TypeScript standard',
   rules: [
     createPrettierRule({
       name: 'TypeScript',
@@ -118,10 +70,11 @@ export const typeScript: Standard = {
   ]
 };
 
+/** SCSS standard */
 export const scss: Standard = {
   name: 'SCSS',
   keywords: ['scss', '.scss'],
-  description: '',
+  description: 'SCSS standard',
   rules: [
     createPrettierRule({
       name: 'SCSS',
@@ -148,4 +101,5 @@ export const scss: Standard = {
   ]
 };
 
+/** Supported standards */
 export const standards: Standard[] = [javaScript, typeScript, scss];

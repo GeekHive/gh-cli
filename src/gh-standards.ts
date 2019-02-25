@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 
 import program from 'commander';
+import fs from 'fs-extra';
 import install from 'install-packages';
 import path from 'path';
-import fs from 'fs-extra';
 import R, { Dictionary } from 'ramda';
-import { standards, Standard, PackageChanges, RuleType } from './standards';
+import { PackageChanges, RuleType } from './rules';
+import { standards, Standard } from './standards';
 
 const ERROR_NO_TYPES = 'At least one valid type is required.';
 let command = 'npm';

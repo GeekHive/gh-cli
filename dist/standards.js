@@ -1,33 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-function createLintRule(options) {
-    return {
-        type: 'lint',
-        name: options.name,
-        description: options.description,
-        packageChanges: options.packageChanges,
-        mainScript: options.mainScript,
-        templates: options.templates
-    };
-}
-exports.createLintRule = createLintRule;
-function createPrettierRule(options) {
-    return {
-        type: 'format',
-        name: "Prettier for " + options.name,
-        description: "Prettier formatting for " + options.name + ".",
-        packageChanges: options.packageChanges,
-        mainScript: options.mainScript,
-        templates: ['../templates/format/']
-    };
-}
-exports.createPrettierRule = createPrettierRule;
+var rules_1 = require("./rules");
+/** JavaScript standard. */
 exports.javaScript = {
     name: 'JavaScript',
     keywords: ['js', 'javascript', '.js', 'jsx', '.jsx'],
-    description: '',
+    description: 'JavaScript standard',
     rules: [
-        createPrettierRule({
+        rules_1.createPrettierRule({
             name: 'JavaScript',
             packageChanges: {
                 devDependencies: ['prettier'],
@@ -37,7 +17,7 @@ exports.javaScript = {
             },
             mainScript: 'js:format'
         }),
-        createLintRule({
+        rules_1.createLintRule({
             name: 'eslint',
             description: 'eslint lint rule for JavaScript',
             packageChanges: {
@@ -51,12 +31,13 @@ exports.javaScript = {
         })
     ]
 };
+/** TypeScript standard */
 exports.typeScript = {
     name: 'TypeScript',
     keywords: ['ts', 'typescript', '.ts', 'tsx', '.tsx'],
-    description: '',
+    description: 'TypeScript standard',
     rules: [
-        createPrettierRule({
+        rules_1.createPrettierRule({
             name: 'TypeScript',
             packageChanges: {
                 devDependencies: ['prettier'],
@@ -66,7 +47,7 @@ exports.typeScript = {
             },
             mainScript: 'ts:format'
         }),
-        createLintRule({
+        rules_1.createLintRule({
             name: 'TSLint',
             description: 'TSLint lint rule for TypeScript',
             packageChanges: {
@@ -80,12 +61,13 @@ exports.typeScript = {
         })
     ]
 };
+/** SCSS standard */
 exports.scss = {
     name: 'SCSS',
     keywords: ['scss', '.scss'],
-    description: '',
+    description: 'SCSS standard',
     rules: [
-        createPrettierRule({
+        rules_1.createPrettierRule({
             name: 'SCSS',
             packageChanges: {
                 devDependencies: ['prettier'],
@@ -95,7 +77,7 @@ exports.scss = {
             },
             mainScript: 'scss:format'
         }),
-        createLintRule({
+        rules_1.createLintRule({
             name: 'Stylelint',
             description: 'Stylelint lint rule for SCSS',
             packageChanges: {
@@ -109,4 +91,5 @@ exports.scss = {
         })
     ]
 };
+/** Supported standards */
 exports.standards = [exports.javaScript, exports.typeScript, exports.scss];
