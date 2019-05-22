@@ -1,4 +1,4 @@
-import { createLintRule, createPrettierRule, Rule } from './rules';
+import { createLintRule, createPrettierRule, Rule, createAccessibilityRule } from './rules';
 
 /** A collection of rules for a language. */
 export interface Standard {
@@ -101,5 +101,68 @@ export const scss: Standard = {
   ]
 };
 
+/** Axe Accessibility Tool */
+export const axe: Standard = {
+  name: 'Axe',
+  keywords: ['axe', 'axe-cli'],
+  description: 'Axe accessibility tool',
+  rules: [
+    createAccessibilityRule({
+      name: 'Axe',
+      description: 'Axe accessibility rule',
+      packageChanges: {
+        devDependencies: ['axe-cli'],
+        scripts: {
+          'a11y:axe': 'axe http://localhost --tags wcag2a,wcag2aa,best-practice --browser chrome',
+        }
+      },
+      mainScript: 'a11y:axe',
+    })
+  ]
+};
+
+/** Pa11y  Accessibility Tool */
+export const pa11y: Standard = {
+  name: 'Pa11y',
+  keywords: ['pa11y'],
+  description: 'Pa11y accessibility tool',
+  rules: [
+    createAccessibilityRule({
+      name: 'Pa11Y',
+      description: 'Pa11y accessibility tool',
+      packageChanges: {
+        devDependencies: ['pa11y'],
+        scripts: {
+          'a11y:pa11y': 'pa11y http://localhost --standard WCAG2AA'
+        }
+      },
+      mainScript: 'a11y:pa11y',
+    })
+  ]
+};
+
+/** Lighthouse  Accessibility Tool */
+export const lighthouse: Standard = {
+  name: 'Lighthouse',
+  keywords: ['lighthouse'],
+  description: 'Lighthouse accessibility tool',
+  rules: [
+    createAccessibilityRule({
+      name: 'Lighthouse',
+      description: 'Lighthouse accessibility tool',
+      packageChanges: {
+        devDependencies: ['lighthouse'],
+        scripts: {
+          'a11y:lighthouse': 'lighthouse http://localhost --output json --output-path ./lighthouse-report.json'
+        }
+      },
+      mainScript: 'a11y:lighthouse',
+    })
+  ]
+};
+
 /** Supported standards */
 export const standards: Standard[] = [javaScript, typeScript, scss];
+
+/** Supported accessibility tools */
+export const accessibilities: Standard[] = [axe, pa11y, lighthouse];

@@ -35,3 +35,14 @@ function createPrettierRule(options) {
     });
 }
 exports.createPrettierRule = createPrettierRule;
+/** Create a new accessibility rule */
+function createAccessibilityRule(options) {
+    return {
+        type: 'accessibility',
+        name: options.name,
+        description: options.description,
+        packageChanges: options.packageChanges,
+        mainScript: options.mainScript,
+    };
+}
+exports.createAccessibilityRule = createAccessibilityRule;
