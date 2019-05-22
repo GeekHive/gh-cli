@@ -54,8 +54,8 @@ var commander_1 = __importDefault(require("commander"));
 var fs_extra_1 = __importDefault(require("fs-extra"));
 var install_packages_1 = __importDefault(require("install-packages"));
 var path_1 = __importDefault(require("path"));
-var ramda_1 = __importDefault(require("ramda"));
 var standards_1 = require("./standards");
+var utility_1 = require("./utility");
 var command = 'npm';
 function start() {
     commander_1.default.parse(process.argv);
@@ -74,7 +74,7 @@ function processTypes(types) {
                 case 0: return [4 /*yield*/, install_packages_1.default.determinePackageManager(process.cwd())];
                 case 1:
                     command = _a.sent();
-                    return [4 /*yield*/, processStandards(getSelectedStandards(types))];
+                    return [4 /*yield*/, utility_1.processStandards(utility_1.getSelectedStandards(standards_1.accessibilities, types), writeScripts)];
                 case 2:
                     _a.sent();
                     return [2 /*return*/];
@@ -82,152 +82,17 @@ function processTypes(types) {
         });
     });
 }
-function getSelectedStandards(types) {
-    return standards_1.accessibilities.filter(function (standard) {
-        return types
-            // string[] -> boolean[] - whether any keyword of this standard matched the current type
-            .map(function (type) { return standard.keywords.reduce(function (p, c) { return p || c === type; }, false); })
-            // boolean[] -> boolean - whether this standard matched any type
-            .reduce(function (p, c) { return p || c; }, false);
-    });
-}
-function processStandards(standards) {
+function writeScripts(accessibilities) {
     return __awaiter(this, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, installDependencies(standards)];
-                case 1:
-                    _a.sent();
-                    return [4 /*yield*/, installDevDependencies(standards)];
-                case 2:
-                    _a.sent();
-                    return [4 /*yield*/, copyTemplates(standards)];
-                case 3:
-                    _a.sent();
-                    return [4 /*yield*/, writeScripts(standards)];
-                case 4:
-                    _a.sent();
-                    return [2 /*return*/];
-            }
-        });
-    });
-}
-function installDependencies(standards) {
-    return __awaiter(this, void 0, void 0, function () {
-        var dependencies, e_1;
+        var scripts, pkgJsonPath, pkg;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    dependencies = mergePackageList(standards, 'dependencies');
-                    if (!dependencies.length) return [3 /*break*/, 5];
-                    console.log('> Installing dependencies:', dependencies.join(', '));
-                    _a.label = 1;
-                case 1:
-                    _a.trys.push([1, 3, , 4]);
-                    return [4 /*yield*/, install_packages_1.default({ packages: dependencies })];
-                case 2:
-                    _a.sent();
-                    return [3 /*break*/, 4];
-                case 3:
-                    e_1 = _a.sent();
-                    console.error(e_1);
-                    return [3 /*break*/, 4];
-                case 4: return [3 /*break*/, 6];
-                case 5:
-                    console.warn('> No dependencies provided');
-                    _a.label = 6;
-                case 6: return [2 /*return*/];
-            }
-        });
-    });
-}
-function installDevDependencies(standards) {
-    return __awaiter(this, void 0, void 0, function () {
-        var devDependencies, e_2;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    devDependencies = mergePackageList(standards, 'devDependencies');
-                    devDependencies.push('concurrently');
-                    devDependencies.push('husky');
-                    if (!devDependencies.length) return [3 /*break*/, 5];
-                    console.log('> Installing devDependencies:', devDependencies.join(', '));
-                    _a.label = 1;
-                case 1:
-                    _a.trys.push([1, 3, , 4]);
-                    return [4 /*yield*/, install_packages_1.default({ packages: devDependencies, saveDev: true })];
-                case 2:
-                    _a.sent();
-                    return [3 /*break*/, 4];
-                case 3:
-                    e_2 = _a.sent();
-                    console.error(e_2);
-                    return [3 /*break*/, 4];
-                case 4: return [3 /*break*/, 6];
-                case 5:
-                    console.warn('> No devDependencies provided');
-                    _a.label = 6;
-                case 6: return [2 /*return*/];
-            }
-        });
-    });
-}
-function copyTemplates(standards) {
-    return __awaiter(this, void 0, void 0, function () {
-        var templates;
-        var _this = this;
-        return __generator(this, function (_a) {
-            templates = mergeTemplates(standards);
-            if (templates.length) {
-                console.log('> Installing templates: ', templates.join(', '));
-                templates.forEach(function (template) { return __awaiter(_this, void 0, void 0, function () {
-                    return __generator(this, function (_a) {
-                        switch (_a.label) {
-                            case 0: return [4 /*yield*/, fs_extra_1.default.copy(path_1.default.join(path_1.default.dirname(require.resolve('./gh')), template), process.cwd(), { overwrite: true })];
-                            case 1: return [2 /*return*/, _a.sent()];
-                        }
-                    });
-                }); });
-            }
-            else {
-                console.warn('> No templates provided');
-            }
-            return [2 /*return*/];
-        });
-    });
-}
-function getMainScripts(type, standards) {
-    return ramda_1.default.uniq(ramda_1.default.flatten(standards.map(function (s) {
-        return ramda_1.default.flatten(s.rules
-            .map(function (r) { return (r.type === type && r.mainScript ? r.mainScript : ''); })
-            .filter(Boolean));
-    })));
-}
-var colors = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan'];
-function createConcurrentScript(scripts, killOthersOnFail) {
-    var k = killOthersOnFail ? ' --kill-others-on-fail' : '';
-    var n = scripts.join(',');
-    var c = colors.slice(0, scripts.length).join(',');
-    var s = scripts.map(function (s) { return "\"" + command + " run " + s + "\""; }).join(' ');
-    return "concurrently" + k + " -n \"" + n + "\" -c \"" + c + "\" " + s;
-}
-function writeScripts(standards) {
-    return __awaiter(this, void 0, void 0, function () {
-        var scripts, precommitScripts, pkgJsonPath, pkg;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    scripts = __assign({}, mergePackageDictionary(standards, 'scripts'), { a11y: createConcurrentScript(getMainScripts('accessibility', standards)) });
-                    precommitScripts = {
-                        hooks: {
-                            'pre-commit': command + " run format && " + command + " run lint"
-                        }
-                    };
+                    scripts = __assign({}, utility_1.mergePackageDictionary(accessibilities, 'scripts'), { a11y: utility_1.createConcurrentScript(command, utility_1.getMainScripts('accessibility', accessibilities)) });
                     console.log('> Writing scripts to package.json:', Object.keys(scripts).join(', '));
                     pkgJsonPath = path_1.default.join(process.cwd(), 'package.json');
                     pkg = JSON.parse(fs_extra_1.default.readFileSync(pkgJsonPath).toString());
                     pkg.scripts = __assign({}, (pkg.scripts || {}), scripts);
-                    pkg.husky = __assign({}, (pkg.husky || {}), precommitScripts);
                     return [4 /*yield*/, fs_extra_1.default.writeFile(pkgJsonPath, JSON.stringify(pkg, undefined, 2))];
                 case 1:
                     _a.sent();
@@ -235,38 +100,5 @@ function writeScripts(standards) {
             }
         });
     });
-}
-function mergePackageDictionary(standards, field) {
-    return standards
-        .map(function (s) {
-        return s.rules
-            .map(function (r) { return (r.packageChanges ? r.packageChanges[field] : []); })
-            .reduce(function (p, c) { return ramda_1.default.merge(p, c); });
-    })
-        .reduce(function (p, c) { return ramda_1.default.merge(p, c); });
-}
-function mergePackageList(standards, field) {
-    return ramda_1.default.uniq(standards
-        .map(function (s) {
-        return s.rules
-            .map(function (r) {
-            return r.packageChanges && r.packageChanges[field]
-                ? r.packageChanges[field]
-                : [];
-        })
-            .reduce(function (p, c) {
-            if (p === void 0) { p = []; }
-            if (c === void 0) { c = []; }
-            return p.concat(c);
-        });
-    })
-        .reduce(function (p, c) {
-        if (p === void 0) { p = []; }
-        if (c === void 0) { c = []; }
-        return p.concat(c);
-    }) || []);
-}
-function mergeTemplates(standards) {
-    return ramda_1.default.uniq(ramda_1.default.flatten(standards.map(function (s) { return ramda_1.default.flatten(s.rules.map(function (r) { return r.templates || []; })); })));
 }
 start();
