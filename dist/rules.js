@@ -42,7 +42,7 @@ function createAccessibilityRule(options) {
         name: options.name,
         description: options.description,
         packageChanges: options.packageChanges,
-        mainScript: options.mainScript,
+        mainScript: options.mainScript
     };
 }
 exports.createAccessibilityRule = createAccessibilityRule;

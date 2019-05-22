@@ -117,7 +117,7 @@ function createConcurrentScript(
 async function writeScripts(standards: Standard[]): Promise<void> {
   const scripts = {
     ...mergePackageDictionary(standards, 'scripts'),
-    a11y: createConcurrentScript(getMainScripts('accessibility', standards)),
+    a11y: createConcurrentScript(getMainScripts('accessibility', standards))
   };
 
   const precommitScripts = {

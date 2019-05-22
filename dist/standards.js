@@ -103,10 +103,10 @@ exports.axe = {
             packageChanges: {
                 devDependencies: ['axe-cli'],
                 scripts: {
-                    'a11y:axe': 'axe http://localhost --tags wcag2a,wcag2aa,best-practice --browser chrome',
+                    'a11y:axe': 'axe http://localhost --tags wcag2a,wcag2aa,best-practice --browser chrome'
                 }
             },
-            mainScript: 'a11y:axe',
+            mainScript: 'a11y:axe'
         })
     ]
 };
@@ -125,7 +125,7 @@ exports.pa11y = {
                     'a11y:pa11y': 'pa11y http://localhost --standard WCAG2AA'
                 }
             },
-            mainScript: 'a11y:pa11y',
+            mainScript: 'a11y:pa11y'
         })
     ]
 };
@@ -144,7 +144,7 @@ exports.lighthouse = {
                     'a11y:lighthouse': 'lighthouse http://localhost --output json --output-path ./lighthouse-report.json'
                 }
             },
-            mainScript: 'a11y:lighthouse',
+            mainScript: 'a11y:lighthouse'
         })
     ]
 };

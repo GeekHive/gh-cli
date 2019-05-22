@@ -1,4 +1,9 @@
-import { createLintRule, createPrettierRule, Rule, createAccessibilityRule } from './rules';
+import {
+  createLintRule,
+  createPrettierRule,
+  Rule,
+  createAccessibilityRule
+} from './rules';
 
 /** A collection of rules for a language. */
 export interface Standard {
@@ -113,10 +118,11 @@ export const axe: Standard = {
       packageChanges: {
         devDependencies: ['axe-cli'],
         scripts: {
-          'a11y:axe': 'axe http://localhost --tags wcag2a,wcag2aa,best-practice --browser chrome',
+          'a11y:axe':
+            'axe http://localhost --tags wcag2a,wcag2aa,best-practice --browser chrome'
         }
       },
-      mainScript: 'a11y:axe',
+      mainScript: 'a11y:axe'
     })
   ]
 };
@@ -136,7 +142,7 @@ export const pa11y: Standard = {
           'a11y:pa11y': 'pa11y http://localhost --standard WCAG2AA'
         }
       },
-      mainScript: 'a11y:pa11y',
+      mainScript: 'a11y:pa11y'
     })
   ]
 };
@@ -153,10 +159,11 @@ export const lighthouse: Standard = {
       packageChanges: {
         devDependencies: ['lighthouse'],
         scripts: {
-          'a11y:lighthouse': 'lighthouse http://localhost --output json --output-path ./lighthouse-report.json'
+          'a11y:lighthouse':
+            'lighthouse http://localhost --output json --output-path ./lighthouse-report.json'
         }
       },
-      mainScript: 'a11y:lighthouse',
+      mainScript: 'a11y:lighthouse'
     })
   ]
 };

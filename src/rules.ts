@@ -83,12 +83,14 @@ export type AccessibilityRuleOptions = Pick<
 >;
 
 /** Create a new accessibility rule */
-export function createAccessibilityRule(options: AccessibilityRuleOptions): Rule {
+export function createAccessibilityRule(
+  options: AccessibilityRuleOptions
+): Rule {
   return {
     type: 'accessibility',
     name: options.name,
     description: options.description,
     packageChanges: options.packageChanges,
-    mainScript: options.mainScript,
+    mainScript: options.mainScript
   };
 }
