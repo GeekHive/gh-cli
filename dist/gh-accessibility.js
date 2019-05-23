@@ -56,15 +56,21 @@ var install_packages_1 = __importDefault(require("install-packages"));
 var path_1 = __importDefault(require("path"));
 var standards_1 = require("./standards");
 var utility_1 = require("./utility");
-var ERROR_NO_TYPES = 'At least one valid type is required.';
 var command = 'npm';
 function start() {
     commander_1.default.parse(process.argv);
     if (!commander_1.default.args.length) {
-        console.error(ERROR_NO_TYPES);
-        process.exit(1);
+        // Add all accessibility tools if list of arguments is omitted
+        var pkgJsonPath = path_1.default.join(process.cwd(), 'package.json');
+        var pkg = JSON.parse(fs_extra_1.default.readFileSync(pkgJsonPath).toString());
+        var allAccessibilities = ['axe', 'pa11y', 'lighthouse'];
+        var currentScripts_1 = utility_1.checkConcurrentScript(pkg, 'a11y', standards_1.accessibilities);
+        var allTypes = allAccessibilities.filter(function (type) { return currentScripts_1.indexOf("a11y:" + type) === -1; });
+        processTypes(allTypes);
     }
-    processTypes(commander_1.default.args);
+    else {
+        processTypes(commander_1.default.args);
+    }
 }
 function processTypes(types) {
     return __awaiter(this, void 0, void 0, function () {
@@ -73,7 +79,7 @@ function processTypes(types) {
                 case 0: return [4 /*yield*/, install_packages_1.default.determinePackageManager(process.cwd())];
                 case 1:
                     command = _a.sent();
-                    return [4 /*yield*/, utility_1.processStandards(utility_1.getSelectedStandards(standards_1.standards, types), writeScripts)];
+                    return [4 /*yield*/, utility_1.processStandards(utility_1.getSelectedStandards(standards_1.accessibilities, types), writeScripts)];
                 case 2:
                     _a.sent();
                     return [2 /*return*/];
@@ -83,27 +89,18 @@ function processTypes(types) {
 }
 function writeScripts(selectedStandards) {
     return __awaiter(this, void 0, void 0, function () {
-        var pkgJsonPath, pkg, currentLintScripts, currentFormatScripts, allLintScripts, allFormatScripts, allUniqueLintScripts, allUniqueFormatScripts, scripts, precommitScripts;
+        var pkgJsonPath, pkg, currentScripts, allMainScripts, allUniqueScripts, scripts;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     pkgJsonPath = path_1.default.join(process.cwd(), 'package.json');
                     pkg = JSON.parse(fs_extra_1.default.readFileSync(pkgJsonPath).toString());
-                    currentLintScripts = utility_1.checkConcurrentScript(pkg, 'lint', standards_1.standards);
-                    currentFormatScripts = utility_1.checkConcurrentScript(pkg, 'format', standards_1.standards);
-                    allLintScripts = utility_1.getMainScripts('lint', selectedStandards).concat(currentLintScripts);
-                    allFormatScripts = utility_1.getMainScripts('format', selectedStandards).concat(currentFormatScripts);
-                    allUniqueLintScripts = allLintScripts.filter(function (script, index) { return allLintScripts.indexOf(script) === index; });
-                    allUniqueFormatScripts = allFormatScripts.filter(function (script, index) { return allFormatScripts.indexOf(script) === index; });
-                    scripts = __assign({}, utility_1.mergePackageDictionary(selectedStandards, 'scripts'), { lint: utility_1.createConcurrentScript(command, allUniqueLintScripts), format: utility_1.createConcurrentScript(command, allUniqueFormatScripts) });
-                    precommitScripts = {
-                        hooks: {
-                            'pre-commit': command + " run format && " + command + " run lint"
-                        }
-                    };
+                    currentScripts = utility_1.checkConcurrentScript(pkg, 'a11y', standards_1.accessibilities);
+                    allMainScripts = utility_1.getMainScripts('a11y', selectedStandards).concat(currentScripts);
+                    allUniqueScripts = allMainScripts.filter(function (script, index) { return allMainScripts.indexOf(script) === index; });
+                    scripts = __assign({}, utility_1.mergePackageDictionary(selectedStandards, 'scripts'), { a11y: utility_1.createConcurrentScript(command, allUniqueScripts) });
                     console.log('> Writing scripts to package.json:', Object.keys(scripts).join(', '));
                     pkg.scripts = __assign({}, (pkg.scripts || {}), scripts);
-                    pkg.husky = __assign({}, (pkg.husky || {}), precommitScripts);
                     return [4 /*yield*/, fs_extra_1.default.writeFile(pkgJsonPath, JSON.stringify(pkg, undefined, 2))];
                 case 1:
                     _a.sent();

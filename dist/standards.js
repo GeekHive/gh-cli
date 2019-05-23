@@ -91,5 +91,64 @@ exports.scss = {
         })
     ]
 };
+/** Axe Accessibility Tool */
+exports.axe = {
+    name: 'Axe',
+    keywords: ['axe', 'axe-cli'],
+    description: 'Axe accessibility tool',
+    rules: [
+        rules_1.createAccessibilityRule({
+            name: 'Axe',
+            description: 'Axe accessibility rule',
+            packageChanges: {
+                devDependencies: ['axe-cli'],
+                scripts: {
+                    'a11y:axe': 'axe http://localhost --tags wcag2a,wcag2aa,best-practice --browser chrome'
+                }
+            },
+            mainScript: 'a11y:axe'
+        })
+    ]
+};
+/** Pa11y  Accessibility Tool */
+exports.pa11y = {
+    name: 'Pa11y',
+    keywords: ['pa11y'],
+    description: 'Pa11y accessibility tool',
+    rules: [
+        rules_1.createAccessibilityRule({
+            name: 'Pa11Y',
+            description: 'Pa11y accessibility tool',
+            packageChanges: {
+                devDependencies: ['pa11y'],
+                scripts: {
+                    'a11y:pa11y': 'pa11y http://localhost --standard WCAG2AA'
+                }
+            },
+            mainScript: 'a11y:pa11y'
+        })
+    ]
+};
+/** Lighthouse  Accessibility Tool */
+exports.lighthouse = {
+    name: 'Lighthouse',
+    keywords: ['lighthouse'],
+    description: 'Lighthouse accessibility tool',
+    rules: [
+        rules_1.createAccessibilityRule({
+            name: 'Lighthouse',
+            description: 'Lighthouse accessibility tool',
+            packageChanges: {
+                devDependencies: ['lighthouse'],
+                scripts: {
+                    'a11y:lighthouse': 'lighthouse http://localhost --output json --output-path ./lighthouse-report.json'
+                }
+            },
+            mainScript: 'a11y:lighthouse'
+        })
+    ]
+};
 /** Supported standards */
 exports.standards = [exports.javaScript, exports.typeScript, exports.scss];
+/** Supported accessibility tools */
+exports.accessibilities = [exports.axe, exports.pa11y, exports.lighthouse];

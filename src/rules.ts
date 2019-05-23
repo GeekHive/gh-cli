@@ -1,5 +1,5 @@
 /** Supported rule types */
-export type RuleType = 'lint' | 'format';
+export type RuleType = 'lint' | 'format' | 'a11y';
 
 /** Dictionary of scripts */
 export interface Scripts {
@@ -74,4 +74,23 @@ export function createPrettierRule(options: PrettierRuleOptions): Rule {
     mainScript: options.mainScript,
     templates: ['../templates/format/']
   });
+}
+
+/** Accessibility rule options */
+export type AccessibilityRuleOptions = Pick<
+  Rule,
+  'name' | 'description' | 'packageChanges' | 'mainScript'
+>;
+
+/** Create a new accessibility rule */
+export function createAccessibilityRule(
+  options: AccessibilityRuleOptions
+): Rule {
+  return {
+    type: 'a11y',
+    name: options.name,
+    description: options.description,
+    packageChanges: options.packageChanges,
+    mainScript: options.mainScript
+  };
 }
