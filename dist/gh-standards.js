@@ -83,7 +83,7 @@ function processTypes(types) {
 }
 function writeScripts(selectedStandards) {
     return __awaiter(this, void 0, void 0, function () {
-        var pkgJsonPath, pkg, currentLintScripts, currentFormatScripts, allLintScripts, allFormatScripts, scripts, precommitScripts;
+        var pkgJsonPath, pkg, currentLintScripts, currentFormatScripts, allLintScripts, allFormatScripts, allUniqueLintScripts, allUniqueFormatScripts, scripts, precommitScripts;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -93,7 +93,9 @@ function writeScripts(selectedStandards) {
                     currentFormatScripts = utility_1.checkConcurrentScript(pkg, 'format', standards_1.standards);
                     allLintScripts = utility_1.getMainScripts('lint', selectedStandards).concat(currentLintScripts);
                     allFormatScripts = utility_1.getMainScripts('format', selectedStandards).concat(currentFormatScripts);
-                    scripts = __assign({}, utility_1.mergePackageDictionary(selectedStandards, 'scripts'), { lint: utility_1.createConcurrentScript(command, allLintScripts), format: utility_1.createConcurrentScript(command, allFormatScripts) });
+                    allUniqueLintScripts = allLintScripts.filter(function (script, index) { return allLintScripts.indexOf(script) === index; });
+                    allUniqueFormatScripts = allFormatScripts.filter(function (script, index) { return allFormatScripts.indexOf(script) === index; });
+                    scripts = __assign({}, utility_1.mergePackageDictionary(selectedStandards, 'scripts'), { lint: utility_1.createConcurrentScript(command, allUniqueLintScripts), format: utility_1.createConcurrentScript(command, allUniqueFormatScripts) });
                     precommitScripts = {
                         hooks: {
                             'pre-commit': command + " run format && " + command + " run lint"

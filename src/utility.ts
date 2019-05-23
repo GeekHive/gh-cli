@@ -98,11 +98,9 @@ export function checkConcurrentScript(
   const concurrentScript = pkg.scripts[type];
   if (concurrentScript) {
     standards.forEach(standard => {
-      if (
-        concurrentScript.includes(standard.keywords[0]) &&
-        standard.rules[0].mainScript
-      ) {
-        currentScripts.push(standard.rules[0].mainScript);
+      const [rule] = standard.rules.filter(rule => rule.type === type);
+      if (concurrentScript.includes(standard.keywords[0]) && rule.mainScript) {
+        currentScripts.push(rule.mainScript);
       }
     });
   }

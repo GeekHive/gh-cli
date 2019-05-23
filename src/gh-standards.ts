@@ -52,10 +52,16 @@ async function writeScripts(selectedStandards: Standard[]): Promise<void> {
     'format',
     selectedStandards
   ).concat(currentFormatScripts);
+  const allUniqueLintScripts = allLintScripts.filter(
+    (script, index) => allLintScripts.indexOf(script) === index
+  );
+  const allUniqueFormatScripts = allFormatScripts.filter(
+    (script, index) => allFormatScripts.indexOf(script) === index
+  );
   const scripts = {
     ...mergePackageDictionary(selectedStandards, 'scripts'),
-    lint: createConcurrentScript(command, allLintScripts),
-    format: createConcurrentScript(command, allFormatScripts)
+    lint: createConcurrentScript(command, allUniqueLintScripts),
+    format: createConcurrentScript(command, allUniqueFormatScripts)
   };
 
   const precommitScripts = {

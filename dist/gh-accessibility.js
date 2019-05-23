@@ -89,7 +89,7 @@ function processTypes(types) {
 }
 function writeScripts(selectedStandards) {
     return __awaiter(this, void 0, void 0, function () {
-        var pkgJsonPath, pkg, currentScripts, allMainScripts, scripts;
+        var pkgJsonPath, pkg, currentScripts, allMainScripts, allUniqueScripts, scripts;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -97,7 +97,8 @@ function writeScripts(selectedStandards) {
                     pkg = JSON.parse(fs_extra_1.default.readFileSync(pkgJsonPath).toString());
                     currentScripts = utility_1.checkConcurrentScript(pkg, 'a11y', standards_1.accessibilities);
                     allMainScripts = utility_1.getMainScripts('a11y', selectedStandards).concat(currentScripts);
-                    scripts = __assign({}, utility_1.mergePackageDictionary(selectedStandards, 'scripts'), { a11y: utility_1.createConcurrentScript(command, allMainScripts) });
+                    allUniqueScripts = allMainScripts.filter(function (script, index) { return allMainScripts.indexOf(script) === index; });
+                    scripts = __assign({}, utility_1.mergePackageDictionary(selectedStandards, 'scripts'), { a11y: utility_1.createConcurrentScript(command, allUniqueScripts) });
                     console.log('> Writing scripts to package.json:', Object.keys(scripts).join(', '));
                     pkg.scripts = __assign({}, (pkg.scripts || {}), scripts);
                     return [4 /*yield*/, fs_extra_1.default.writeFile(pkgJsonPath, JSON.stringify(pkg, undefined, 2))];

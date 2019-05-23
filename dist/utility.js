@@ -172,9 +172,9 @@ function checkConcurrentScript(pkg, type, standards) {
     var concurrentScript = pkg.scripts[type];
     if (concurrentScript) {
         standards.forEach(function (standard) {
-            if (concurrentScript.includes(standard.keywords[0]) &&
-                standard.rules[0].mainScript) {
-                currentScripts.push(standard.rules[0].mainScript);
+            var rule = standard.rules.filter(function (rule) { return rule.type === type; })[0];
+            if (concurrentScript.includes(standard.keywords[0]) && rule.mainScript) {
+                currentScripts.push(rule.mainScript);
             }
         });
     }

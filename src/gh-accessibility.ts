@@ -57,9 +57,12 @@ async function writeScripts(selectedStandards: Standard[]): Promise<void> {
     'a11y',
     selectedStandards
   ).concat(currentScripts);
+  const allUniqueScripts = allMainScripts.filter(
+    (script, index) => allMainScripts.indexOf(script) === index
+  );
   const scripts = {
     ...mergePackageDictionary(selectedStandards, 'scripts'),
-    a11y: createConcurrentScript(command, allMainScripts)
+    a11y: createConcurrentScript(command, allUniqueScripts)
   };
   console.log(
     '> Writing scripts to package.json:',
