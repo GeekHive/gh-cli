@@ -167,6 +167,20 @@ function getMainScripts(type, standards) {
 }
 exports.getMainScripts = getMainScripts;
 var colors = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan'];
+function checkConcurrentScript(pkg, type, standards) {
+    var currentScripts = [];
+    var concurrentScript = pkg.scripts[type];
+    if (concurrentScript) {
+        standards.forEach(function (standard) {
+            if (concurrentScript.includes(standard.keywords[0]) &&
+                standard.rules[0].mainScript) {
+                currentScripts.push(standard.rules[0].mainScript);
+            }
+        });
+    }
+    return currentScripts;
+}
+exports.checkConcurrentScript = checkConcurrentScript;
 function createConcurrentScript(command, scripts, killOthersOnFail) {
     var k = killOthersOnFail ? ' --kill-others-on-fail' : '';
     var n = scripts.join(',');

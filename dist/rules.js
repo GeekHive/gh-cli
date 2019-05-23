@@ -38,7 +38,7 @@ exports.createPrettierRule = createPrettierRule;
 /** Create a new accessibility rule */
 function createAccessibilityRule(options) {
     return {
-        type: 'accessibility',
+        type: 'a11y',
         name: options.name,
         description: options.description,
         packageChanges: options.packageChanges,

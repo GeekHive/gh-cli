@@ -89,6 +89,26 @@ export function getMainScripts(
 
 const colors = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan'];
 
+export function checkConcurrentScript(
+  pkg: any,
+  type: RuleType,
+  standards: Standard[]
+) {
+  const currentScripts: string[] = [];
+  const concurrentScript = pkg.scripts[type];
+  if (concurrentScript) {
+    standards.forEach(standard => {
+      if (
+        concurrentScript.includes(standard.keywords[0]) &&
+        standard.rules[0].mainScript
+      ) {
+        currentScripts.push(standard.rules[0].mainScript);
+      }
+    });
+  }
+  return currentScripts;
+}
+
 export function createConcurrentScript(
   command: string,
   scripts: string[],

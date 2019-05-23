@@ -61,7 +61,12 @@ function start() {
     commander_1.default.parse(process.argv);
     if (!commander_1.default.args.length) {
         // Add all accessibility tools if list of arguments is omitted
-        processTypes(['axe', 'pa11y', 'lighthouse']);
+        var pkgJsonPath = path_1.default.join(process.cwd(), 'package.json');
+        var pkg = JSON.parse(fs_extra_1.default.readFileSync(pkgJsonPath).toString());
+        var allAccessibilities = ['axe', 'pa11y', 'lighthouse'];
+        var currentScripts_1 = utility_1.checkConcurrentScript(pkg, 'a11y', standards_1.accessibilities);
+        var allTypes = allAccessibilities.filter(function (type) { return currentScripts_1.indexOf("a11y:" + type) === -1; });
+        processTypes(allTypes);
     }
     else {
         processTypes(commander_1.default.args);
@@ -82,16 +87,18 @@ function processTypes(types) {
         });
     });
 }
-function writeScripts(accessibilities) {
+function writeScripts(selectedStandards) {
     return __awaiter(this, void 0, void 0, function () {
-        var scripts, pkgJsonPath, pkg;
+        var pkgJsonPath, pkg, currentScripts, allMainScripts, scripts;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    scripts = __assign({}, utility_1.mergePackageDictionary(accessibilities, 'scripts'), { a11y: utility_1.createConcurrentScript(command, utility_1.getMainScripts('accessibility', accessibilities)) });
-                    console.log('> Writing scripts to package.json:', Object.keys(scripts).join(', '));
                     pkgJsonPath = path_1.default.join(process.cwd(), 'package.json');
                     pkg = JSON.parse(fs_extra_1.default.readFileSync(pkgJsonPath).toString());
+                    currentScripts = utility_1.checkConcurrentScript(pkg, 'a11y', standards_1.accessibilities);
+                    allMainScripts = utility_1.getMainScripts('a11y', selectedStandards).concat(currentScripts);
+                    scripts = __assign({}, utility_1.mergePackageDictionary(selectedStandards, 'scripts'), { a11y: utility_1.createConcurrentScript(command, allMainScripts) });
+                    console.log('> Writing scripts to package.json:', Object.keys(scripts).join(', '));
                     pkg.scripts = __assign({}, (pkg.scripts || {}), scripts);
                     return [4 /*yield*/, fs_extra_1.default.writeFile(pkgJsonPath, JSON.stringify(pkg, undefined, 2))];
                 case 1:

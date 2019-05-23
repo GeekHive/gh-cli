@@ -81,21 +81,25 @@ function processTypes(types) {
         });
     });
 }
-function writeScripts(standards) {
+function writeScripts(selectedStandards) {
     return __awaiter(this, void 0, void 0, function () {
-        var scripts, precommitScripts, pkgJsonPath, pkg;
+        var pkgJsonPath, pkg, currentLintScripts, currentFormatScripts, allLintScripts, allFormatScripts, scripts, precommitScripts;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    scripts = __assign({}, utility_1.mergePackageDictionary(standards, 'scripts'), { lint: utility_1.createConcurrentScript(command, utility_1.getMainScripts('lint', standards)), format: utility_1.createConcurrentScript(command, utility_1.getMainScripts('format', standards)) });
+                    pkgJsonPath = path_1.default.join(process.cwd(), 'package.json');
+                    pkg = JSON.parse(fs_extra_1.default.readFileSync(pkgJsonPath).toString());
+                    currentLintScripts = utility_1.checkConcurrentScript(pkg, 'lint', standards_1.standards);
+                    currentFormatScripts = utility_1.checkConcurrentScript(pkg, 'format', standards_1.standards);
+                    allLintScripts = utility_1.getMainScripts('lint', selectedStandards).concat(currentLintScripts);
+                    allFormatScripts = utility_1.getMainScripts('format', selectedStandards).concat(currentFormatScripts);
+                    scripts = __assign({}, utility_1.mergePackageDictionary(selectedStandards, 'scripts'), { lint: utility_1.createConcurrentScript(command, allLintScripts), format: utility_1.createConcurrentScript(command, allFormatScripts) });
                     precommitScripts = {
                         hooks: {
                             'pre-commit': command + " run format && " + command + " run lint"
                         }
                     };
                     console.log('> Writing scripts to package.json:', Object.keys(scripts).join(', '));
-                    pkgJsonPath = path_1.default.join(process.cwd(), 'package.json');
-                    pkg = JSON.parse(fs_extra_1.default.readFileSync(pkgJsonPath).toString());
                     pkg.scripts = __assign({}, (pkg.scripts || {}), scripts);
                     pkg.husky = __assign({}, (pkg.husky || {}), precommitScripts);
                     return [4 /*yield*/, fs_extra_1.default.writeFile(pkgJsonPath, JSON.stringify(pkg, undefined, 2))];

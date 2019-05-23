@@ -6,6 +6,7 @@ import install from 'install-packages';
 import path from 'path';
 import { standards, Standard } from './standards';
 import {
+  checkConcurrentScript,
   createConcurrentScript,
   getMainScripts,
   getSelectedStandards,
@@ -30,11 +31,31 @@ async function processTypes(types: string[]) {
   await processStandards(getSelectedStandards(standards, types), writeScripts);
 }
 
-async function writeScripts(standards: Standard[]): Promise<void> {
+async function writeScripts(selectedStandards: Standard[]): Promise<void> {
+  const pkgJsonPath = path.join(process.cwd(), 'package.json');
+  const pkg = JSON.parse(fs.readFileSync(pkgJsonPath).toString());
+  const currentLintScripts: string[] = checkConcurrentScript(
+    pkg,
+    'lint',
+    standards
+  );
+  const currentFormatScripts: string[] = checkConcurrentScript(
+    pkg,
+    'format',
+    standards
+  );
+  const allLintScripts: string[] = getMainScripts(
+    'lint',
+    selectedStandards
+  ).concat(currentLintScripts);
+  const allFormatScripts: string[] = getMainScripts(
+    'format',
+    selectedStandards
+  ).concat(currentFormatScripts);
   const scripts = {
-    ...mergePackageDictionary(standards, 'scripts'),
-    lint: createConcurrentScript(command, getMainScripts('lint', standards)),
-    format: createConcurrentScript(command, getMainScripts('format', standards))
+    ...mergePackageDictionary(selectedStandards, 'scripts'),
+    lint: createConcurrentScript(command, allLintScripts),
+    format: createConcurrentScript(command, allFormatScripts)
   };
 
   const precommitScripts = {
@@ -47,8 +68,6 @@ async function writeScripts(standards: Standard[]): Promise<void> {
     '> Writing scripts to package.json:',
     Object.keys(scripts).join(', ')
   );
-  const pkgJsonPath = path.join(process.cwd(), 'package.json');
-  const pkg = JSON.parse(fs.readFileSync(pkgJsonPath).toString());
   pkg.scripts = { ...(pkg.scripts || {}), ...scripts };
   pkg.husky = { ...(pkg.husky || {}), ...precommitScripts };
   await fs.writeFile(pkgJsonPath, JSON.stringify(pkg, undefined, 2));

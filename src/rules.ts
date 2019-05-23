@@ -1,5 +1,5 @@
 /** Supported rule types */
-export type RuleType = 'lint' | 'format' | 'accessibility';
+export type RuleType = 'lint' | 'format' | 'a11y';
 
 /** Dictionary of scripts */
 export interface Scripts {
@@ -87,7 +87,7 @@ export function createAccessibilityRule(
   options: AccessibilityRuleOptions
 ): Rule {
   return {
-    type: 'accessibility',
+    type: 'a11y',
     name: options.name,
     description: options.description,
     packageChanges: options.packageChanges,
