@@ -1,0 +1,3 @@
+{
+  "extends": ["@geekhive/eslint-config-typescript"]
+}

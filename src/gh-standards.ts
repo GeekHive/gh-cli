@@ -1,45 +1,106 @@
 #!/usr/bin/env node
 
-import program from 'commander';
+import { program } from 'commander';
 import fs from 'fs-extra';
 import install from 'install-packages';
 import path from 'path';
 import R, { Dictionary } from 'ramda';
 import { PackageChanges, RuleType } from './rules';
-import { standards, Standard } from './standards';
+import { standards as allStandards, Standard } from './standards';
 
 const ERROR_NO_TYPES = 'At least one valid type is required.';
 let command = 'npm';
 
-function start() {
-  program.parse(process.argv);
-  if (!program.args.length) {
-    console.error(ERROR_NO_TYPES);
-    process.exit(1);
-  }
-  processTypes(program.args);
+const colors = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan'];
+
+function createConcurrentScript(
+  scripts: string[],
+  killOthersOnFail?: boolean
+): string {
+  const k = killOthersOnFail ? ' --kill-others-on-fail' : '';
+  const n = scripts.join(',');
+  const c = colors.slice(0, scripts.length).join(',');
+  const s = scripts.map((ps) => `"${command} run ${ps}"`).join(' ');
+  return `concurrently${k} -n "${n}" -c "${c}" ${s}`;
 }
 
-async function processTypes(types: string[]) {
-  command = await install.determinePackageManager(process.cwd());
-  await processStandards(getSelectedStandards(types));
+function mergePackageDictionary<
+  K extends keyof Pick<PackageChanges, 'scripts'>
+>(standards: Standard[], field: K): Dictionary<string> {
+  return standards
+    .map((s) =>
+      s.rules
+        .map((r) => (r.packageChanges ? r.packageChanges[field] : []))
+        .reduce((p, c) => (R as any).merge(p, c))
+    )
+    .reduce((p, c) => (R as any).merge(p, c)) as Dictionary<string>;
 }
 
-function getSelectedStandards(types: string[]) {
-  return standards.filter(standard =>
-    types
-      // string[] -> boolean[] - whether any keyword of this standard matched the current type
-      .map(type => standard.keywords.reduce((p, c) => p || c === type, false))
-      // boolean[] -> boolean - whether this standard matched any type
-      .reduce((p, c) => p || c, false)
+function mergePackageList<
+  K extends keyof Pick<PackageChanges, 'dependencies' | 'devDependencies'>
+>(standards: Standard[], field: K): string[] {
+  return R.uniq(
+    standards
+      .map((s) =>
+        s.rules
+          .map((r) =>
+            r.packageChanges && r.packageChanges[field]
+              ? (r.packageChanges[field] as string[])
+              : []
+          )
+          .reduce((p = [], c = []) => [...p, ...c])
+      )
+      .reduce((p = [], c = []) => [...p, ...c]) || []
   );
 }
 
-async function processStandards(standards: Standard[]): Promise<void> {
-  await installDependencies(standards);
-  await installDevDependencies(standards);
-  await copyTemplates(standards);
-  await writeScripts(standards);
+function mergeTemplates(standards: Standard[]): string[] {
+  return R.uniq(
+    R.flatten(
+      standards.map((s) => R.flatten(s.rules.map((r) => r.templates || [])))
+    )
+  ) as any as string[];
+}
+
+function getMainScripts(type: RuleType, standards: Standard[]): string[] {
+  return R.uniq(
+    R.flatten(
+      standards.map((s) =>
+        R.flatten(
+          s.rules
+            .map((r) => (r.type === type && r.mainScript ? r.mainScript : ''))
+            .filter(Boolean)
+        )
+      )
+    ) as any as string[]
+  );
+}
+
+async function writeScripts(standards: Standard[]): Promise<void> {
+  const scripts = {
+    ...mergePackageDictionary(standards, 'scripts'),
+    lint: createConcurrentScript(getMainScripts('lint', standards)),
+    format: createConcurrentScript(getMainScripts('format', standards)),
+  };
+
+  console.log(
+    '> Writing scripts to package.json:',
+    Object.keys(scripts).join(', ')
+  );
+  const pkgJsonPath = path.join(process.cwd(), 'package.json');
+  const pkg = JSON.parse(fs.readFileSync(pkgJsonPath).toString());
+  pkg.scripts = { ...(pkg.scripts || {}), ...scripts };
+  await fs.writeFile(pkgJsonPath, JSON.stringify(pkg, undefined, 2));
+}
+
+function getSelectedStandards(types: string[]) {
+  return allStandards.filter((standard) =>
+    types
+      // string[] -> boolean[] - whether any keyword of this standard matched the current type
+      .map((type) => standard.keywords.reduce((p, c) => p || c === type, false))
+      // boolean[] -> boolean - whether this standard matched any type
+      .reduce((p, c) => p || c, false)
+  );
 }
 
 async function installDependencies(standards: Standard[]): Promise<void> {
@@ -58,8 +119,6 @@ async function installDependencies(standards: Standard[]): Promise<void> {
 
 async function installDevDependencies(standards: Standard[]): Promise<void> {
   const devDependencies = mergePackageList(standards, 'devDependencies');
-  devDependencies.push('concurrently');
-  devDependencies.push('husky');
   if (devDependencies.length) {
     console.log('> Installing devDependencies:', devDependencies.join(', '));
     try {
@@ -76,104 +135,37 @@ async function copyTemplates(standards: Standard[]): Promise<void> {
   const templates = mergeTemplates(standards);
   if (templates.length) {
     console.log('> Installing templates: ', templates.join(', '));
-    templates.forEach(
-      async template =>
-        await fs.copy(
-          path.join(path.dirname(require.resolve('./gh')), template),
-          process.cwd(),
-          { overwrite: true }
-        )
+    templates.forEach(async (template) =>
+      fs.copy(
+        path.join(path.dirname(require.resolve('./gh')), template),
+        process.cwd(),
+        { overwrite: true }
+      )
     );
   } else {
     console.warn('> No templates provided');
   }
 }
 
-function getMainScripts(type: RuleType, standards: Standard[]): string[] {
-  return R.uniq((R.flatten(
-    standards.map(s =>
-      R.flatten(
-        s.rules
-          .map(r => (r.type === type && r.mainScript ? r.mainScript : ''))
-          .filter(Boolean)
-      )
-    )
-  ) as any) as string[]);
+async function processStandards(standards: Standard[]): Promise<void> {
+  await installDependencies(standards);
+  await installDevDependencies(standards);
+  await copyTemplates(standards);
+  await writeScripts(standards);
 }
 
-const colors = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan'];
-
-function createConcurrentScript(
-  scripts: string[],
-  killOthersOnFail?: boolean
-): string {
-  const k = killOthersOnFail ? ' --kill-others-on-fail' : '';
-  const n = scripts.join(',');
-  const c = colors.slice(0, scripts.length).join(',');
-  const s = scripts.map(s => `\"${command} run ${s}\"`).join(' ');
-  return `concurrently${k} -n \"${n}\" -c \"${c}\" ${s}`;
+async function processTypes(types: string[]) {
+  command = await install.determinePackageManager(process.cwd());
+  await processStandards(getSelectedStandards(types));
 }
 
-async function writeScripts(standards: Standard[]): Promise<void> {
-  const scripts = {
-    ...mergePackageDictionary(standards, 'scripts'),
-    lint: createConcurrentScript(getMainScripts('lint', standards)),
-    format: createConcurrentScript(getMainScripts('format', standards))
-  };
-
-  const precommitScripts = {
-    hooks: {
-      'pre-commit': `${command} run format && ${command} run lint`
-    }
-  };
-
-  console.log(
-    '> Writing scripts to package.json:',
-    Object.keys(scripts).join(', ')
-  );
-  const pkgJsonPath = path.join(process.cwd(), 'package.json');
-  const pkg = JSON.parse(fs.readFileSync(pkgJsonPath).toString());
-  pkg.scripts = { ...(pkg.scripts || {}), ...scripts };
-  pkg.husky = { ...(pkg.husky || {}), ...precommitScripts };
-  await fs.writeFile(pkgJsonPath, JSON.stringify(pkg, undefined, 2));
-}
-
-function mergePackageDictionary<
-  K extends keyof Pick<PackageChanges, 'scripts'>
->(standards: Standard[], field: K): Dictionary<string> {
-  return standards
-    .map(s =>
-      s.rules
-        .map(r => (r.packageChanges ? r.packageChanges[field] : []))
-        .reduce((p, c) => R.merge(p, c))
-    )
-    .reduce((p, c) => R.merge(p, c)) as Dictionary<string>;
-}
-
-function mergePackageList<
-  K extends keyof Pick<PackageChanges, 'dependencies' | 'devDependencies'>
->(standards: Standard[], field: K): string[] {
-  return R.uniq(
-    standards
-      .map(s =>
-        s.rules
-          .map(r =>
-            r.packageChanges && r.packageChanges[field]
-              ? (r.packageChanges[field] as string[])
-              : []
-          )
-          .reduce((p = [], c = []) => [...p, ...c])
-      )
-      .reduce((p = [], c = []) => [...p, ...c]) || []
-  );
-}
-
-function mergeTemplates(standards: Standard[]): string[] {
-  return (R.uniq(
-    R.flatten(
-      standards.map(s => R.flatten(s.rules.map(r => r.templates || [])))
-    )
-  ) as any) as string[];
+function start() {
+  program.parse(process.argv);
+  if (!program.args.length) {
+    console.error(ERROR_NO_TYPES);
+    process.exit(1);
+  }
+  processTypes(program.args);
 }
 
 start();

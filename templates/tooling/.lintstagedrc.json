@@ -1,0 +1,4 @@
+{
+  "*.{js,jsx,ts,tsx}": ["yarn run script:lint", "yarn run script:format"],
+  "*.{scss}": ["yarn run scss:lint", "yarn run scss:format"]
+}

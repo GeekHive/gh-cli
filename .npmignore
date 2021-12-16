@@ -1,2 +1,8 @@
 .gitignore
+.editorconfig
+.eslintignore
+.eslintrc.json
+.huskyrc.json
+.lintstagedrc.json
+.prettierrc.json
 yarn-error.log

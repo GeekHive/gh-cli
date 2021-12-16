@@ -1,7 +1,7 @@
 {
   "name": "@geekhive/gh-cli",
   "description": "CLI utility for front end GeekHive projects.",
-  "version": "0.2.5",
+  "version": "1.0.0",
   "license": "MIT",
   "author": {
     "name": "Justin Firth",
@@ -21,32 +21,29 @@
     "start": "node ./dist/gh.js",
     "dev": "tsc -w -p ./",
     "build": "tsc -p ./",
-    "ts:format": "prettier --write src/**/*.ts src/**/*.tsx",
-    "ts:lint": "tslint --project ./",
-    "lint": "concurrently -n \"ts:lint\" -c \"red\" \"yarn run ts:lint\"",
-    "format": "concurrently -n \"ts:format\" -c \"red\" \"yarn run ts:format\""
+    "lint": "eslint --write",
+    "format": "prettier --write",
+    "lint-staged": "lint-staged"
   },
   "dependencies": {
-    "@types/fs-extra": "^5.0.4",
-    "@types/node": "^10.12.11",
-    "@types/ramda": "^0.25.43",
-    "commander": "^2.19.0",
-    "fs-extra": "^7.0.1",
+    "@types/fs-extra": "^9.0.13",
+    "@types/node": "^14",
+    "@types/ramda": "^0.27.60",
+    "commander": "^8.3.0",
+    "fs-extra": "^10.0.0",
     "install-packages": "^0.2.5",
     "npm-install-package": "^2.1.0",
-    "ramda": "^0.26.1"
+    "ramda": "^0.27.1"
   },
   "devDependencies": {
+    "@geekhive/eslint-config-typescript": "https://github.com/geekhive/eslint-config-typescript",
     "@geekhive/tslint-config-standard": "^1.0.0",
-    "concurrently": "^4.1.2",
-    "husky": "^3.0.4",
-    "prettier": "^1.16.4",
+    "concurrently": "^6.4.0",
+    "eslint": "^7",
+    "husky": "^4",
+    "lint-staged": "^12.1.2",
+    "prettier": "^2.5.1",
     "tslint": "^6.1.1",
-    "typescript": ">=2.1.0 || >=2.1.0-dev || >=2.2.0-dev || >=2.3.0-dev || >=2.4.0-dev || >=2.5.0-dev || >=2.6.0-dev || >=2.7.0-dev || >=2.8.0-dev || >=2.9.0-dev"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "yarn run format && yarn run lint"
-    }
+    "typescript": "^4.5.3"
   }
 }

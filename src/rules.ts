@@ -1,5 +1,5 @@
 /** Supported rule types */
-export type RuleType = 'lint' | 'format';
+export type RuleType = 'tooling' | 'lint' | 'format';
 
 /** Dictionary of scripts */
 export interface Scripts {
@@ -31,14 +31,7 @@ export type LintRuleOptions = Pick<
 
 /** Create a new lint rule */
 export function createLintRule(options: LintRuleOptions): Rule {
-  return {
-    type: 'lint',
-    name: options.name,
-    description: options.description,
-    packageChanges: options.packageChanges,
-    mainScript: options.mainScript,
-    templates: options.templates
-  };
+  return { ...options, type: 'lint' };
 }
 
 /** Format rule options */
@@ -49,14 +42,7 @@ export type FormatRuleOptions = Pick<
 
 /** Create a new format rule */
 export function createFormatRule(options: FormatRuleOptions): Rule {
-  return {
-    type: 'format',
-    name: options.name,
-    description: options.description,
-    packageChanges: options.packageChanges,
-    mainScript: options.mainScript,
-    templates: options.templates
-  };
+  return { ...options, type: 'format' };
 }
 
 /** Prettier rule options */
@@ -72,6 +58,6 @@ export function createPrettierRule(options: PrettierRuleOptions): Rule {
     description: `Prettier formatting for ${options.name}.`,
     packageChanges: options.packageChanges,
     mainScript: options.mainScript,
-    templates: ['../templates/format/']
+    templates: ['../templates/format/'],
   });
 }
